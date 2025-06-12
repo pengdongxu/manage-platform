@@ -1,0 +1,15 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+
+spring:
+  data:
+    redis:
+      host: 101.132.251.133
+      port: 6380
+      password: KindstaridRFl#T%231
+      database: 8
+
+token:
+  secret: 45451165465
