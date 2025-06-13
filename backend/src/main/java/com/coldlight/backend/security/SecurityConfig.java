@@ -72,7 +72,7 @@ public class SecurityConfig {
 
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter() {
-        return new JwtAuthenticationFilter(tokenService, principalStrategies);
+        return new JwtAuthenticationFilter(tokenService, principalStrategies, properties);
     }
 
     /**

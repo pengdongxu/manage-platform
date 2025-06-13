@@ -2,6 +2,7 @@ package com.coldlight.backend.common.jwt;
 
 import com.coldlight.backend.common.enums.UserType;
 import com.coldlight.backend.common.exception.UnauthorizedException;
+import com.coldlight.backend.config.SecurityProperties;
 import com.coldlight.backend.security.BaseUserPrincipal;
 import com.coldlight.backend.security.principal.UserPrincipalStrategy;
 import io.jsonwebtoken.Claims;
@@ -29,11 +30,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final TokenServiceImpl tokenService;
     private final List<UserPrincipalStrategy> principalStrategies;
+    private final SecurityProperties securityProperties;
 
 
-    public JwtAuthenticationFilter(TokenServiceImpl tokenService, List<UserPrincipalStrategy> principalStrategies) {
+    public JwtAuthenticationFilter(TokenServiceImpl tokenService,
+                                   List<UserPrincipalStrategy> principalStrategies,
+                                   SecurityProperties securityProperties) {
         this.tokenService = tokenService;
         this.principalStrategies = principalStrategies;
+        this.securityProperties = securityProperties;
     }
 
 
@@ -41,39 +46,59 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
-        String token = getTokenFromRequest(request);
+        String requestClientType = request.getHeader("X-Client-Type");
 
-        if (StringUtils.hasText(token)) {
-            try {
-                String requestClientType = request.getHeader("X-Client-Type");
-                if (requestClientType == null){
-                    writeErrorResponse(response, HttpServletResponse.SC_BAD_REQUEST, "缺少请求参数");
-                    return;
-                }
-                Claims claims = tokenService.parseToken(token);
+        // 客户端类型缺失，直接返回
+        if (!StringUtils.hasText(requestClientType)) {
+            returnError(response, HttpServletResponse.SC_BAD_REQUEST, "缺少请求头参数 X-Client-Type");
+            return;
+        }
 
-                String tokneClientType = claims.get("clientType", String.class);
-                if (!requestClientType.equals(tokneClientType)) {
-                    writeErrorResponse(response, HttpServletResponse.SC_UNAUTHORIZED, "Token 与请求的 Client-Type 不一致");
-                    return;
-                }
+        // 公共路径直接放行
+        if (isPublicPath(request)) {
+            filterChain.doFilter(request, response);
+            return;
+        }
 
-                String userType = claims.get("userType", String.class);
-                UserType userTypeEnum = UserType.valueOf(userType);
-                BaseUserPrincipal userPrincipal = resolvePrincipal(userTypeEnum, claims, request);
+        String token = extractToken(request);
 
-                UsernamePasswordAuthenticationToken authentication =
-                        new UsernamePasswordAuthenticationToken(userPrincipal, null, userPrincipal.getAuthorities());
-                SecurityContextHolder.getContext().setAuthentication(authentication);
-            } catch (Exception  e) {
-                writeErrorResponse(response, HttpServletResponse.SC_UNAUTHORIZED, e.getMessage());
+        if (!StringUtils.hasText(token)) {
+            returnError(response, HttpServletResponse.SC_UNAUTHORIZED, "未提供令牌");
+            return;
+        }
+
+        try {
+            Claims claims = tokenService.parseToken(token);
+
+            String tokenClientType = claims.get("clientType", String.class);
+            if (!requestClientType.equals(tokenClientType)) {
+                returnError(response, HttpServletResponse.SC_UNAUTHORIZED, "Token 与请求头 Client-Type 不一致");
                 return;
             }
+
+            String userType = claims.get("userType", String.class);
+            UserType userTypeEnum = UserType.valueOf(userType);
+
+            BaseUserPrincipal principal = resolvePrincipal(userTypeEnum, claims, request);
+            UsernamePasswordAuthenticationToken authentication =
+                    new UsernamePasswordAuthenticationToken(principal, null, principal.getAuthorities());
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+        } catch (Exception e) {
+            returnError(response, HttpServletResponse.SC_UNAUTHORIZED, e.getMessage());
+            return;
         }
+
         filterChain.doFilter(request, response);
     }
 
-    private String getTokenFromRequest(HttpServletRequest request) {
+
+    private boolean isPublicPath(HttpServletRequest request) {
+        String path = request.getRequestURI();
+        return securityProperties.getGlobalWhiteList().stream()
+                .anyMatch(p -> path.matches(p.replace("**", ".*")));
+    }
+
+    private String extractToken(HttpServletRequest request) {
         String bearerToken = request.getHeader("Authorization");
         if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
             return bearerToken.substring(7);
@@ -89,7 +114,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 .handle(claims, request);
     }
 
-    private void writeErrorResponse(HttpServletResponse response, int status, String message) throws IOException {
+    private void returnError(HttpServletResponse response, int status, String message) throws IOException {
         response.setStatus(status);
         response.setContentType("application/json;charset=UTF-8");
         response.getWriter().write("{\"error\":\"" + message + "\"}");

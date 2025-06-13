@@ -4,13 +4,15 @@ import com.coldlight.backend.common.enums.UserType;
 import com.coldlight.backend.common.exception.UnauthorizedException;
 import com.coldlight.backend.common.request.ClientType;
 import io.jsonwebtoken.*;
-import lombok.RequiredArgsConstructor;
+import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.nio.charset.StandardCharsets;
+import java.security.Key;
 import java.time.Instant;
 import java.util.Date;
 import java.util.HashMap;
@@ -57,24 +59,29 @@ public class TokenServiceImpl implements TokenService{
         claims.put("userType", userType);
         claims.put("clientType", clientType);
 
+        Key key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+
         return Jwts.builder()
                 .setSubject(String.valueOf(userId))
                 .setClaims(claims)
-                .setIssuedAt(new Date())
+                .setIssuedAt(Date.from(now))
                 .setExpiration(Date.from(now.plusSeconds(ACCESS_TOKEN_EXPIRE_SECONDS)))
-                .signWith(SignatureAlgorithm.HS256, secret)
+                .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
     }
 
     public Claims parseToken(String token) {
         try {
-            return Jwts.parser()
-                    .setSigningKey(secret)
+            Key key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+
+            return Jwts.parserBuilder()
+                    .setSigningKey(key)
+                    .build()
                     .parseClaimsJws(token)
                     .getBody();
         } catch (ExpiredJwtException e) {
             throw new UnauthorizedException("Token 已过期");
-        } catch (UnsupportedJwtException | MalformedJwtException | SignatureException e) {
+        } catch (UnsupportedJwtException | MalformedJwtException | SecurityException   e) {
             throw new UnauthorizedException("无效的 Token");
         } catch (Exception e) {
             throw new UnauthorizedException("Token 解析失败");
