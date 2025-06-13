@@ -1,8 +1,7 @@
-package com.coldlight.backend.config;
+package com.coldlight.backend.common.jwt;
 
 import com.coldlight.backend.common.enums.UserType;
 import com.coldlight.backend.common.exception.UnauthorizedException;
-import com.coldlight.backend.common.jwt.TokenServiceImpl;
 import com.coldlight.backend.security.BaseUserPrincipal;
 import com.coldlight.backend.security.principal.UserPrincipalStrategy;
 import io.jsonwebtoken.Claims;
@@ -46,12 +45,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         if (StringUtils.hasText(token)) {
             try {
+                String requestClientType = request.getHeader("X-Client-Type");
+                if (requestClientType == null){
+                    writeErrorResponse(response, HttpServletResponse.SC_BAD_REQUEST, "缺少请求参数");
+                    return;
+                }
                 Claims claims = tokenService.parseToken(token);
 
-                String requestClientType = request.getHeader("Client-Type");
                 String tokneClientType = claims.get("clientType", String.class);
                 if (!requestClientType.equals(tokneClientType)) {
-                    throw new UnauthorizedException("Token 与请求的 Client-Type 不一致");
+                    writeErrorResponse(response, HttpServletResponse.SC_UNAUTHORIZED, "Token 与请求的 Client-Type 不一致");
+                    return;
                 }
 
                 String userType = claims.get("userType", String.class);
@@ -61,10 +65,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 UsernamePasswordAuthenticationToken authentication =
                         new UsernamePasswordAuthenticationToken(userPrincipal, null, userPrincipal.getAuthorities());
                 SecurityContextHolder.getContext().setAuthentication(authentication);
-            } catch (UnauthorizedException e) {
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                response.setContentType("application/json;charset=UTF-8");
-                response.getWriter().write("{\"error\":\"" + e.getMessage() + "\"}");
+            } catch (Exception  e) {
+                writeErrorResponse(response, HttpServletResponse.SC_UNAUTHORIZED, e.getMessage());
                 return;
             }
         }
@@ -85,5 +87,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 .findFirst()
                 .orElseThrow(() -> new UnauthorizedException("不支持的用户类型"))
                 .handle(claims, request);
+    }
+
+    private void writeErrorResponse(HttpServletResponse response, int status, String message) throws IOException {
+        response.setStatus(status);
+        response.setContentType("application/json;charset=UTF-8");
+        response.getWriter().write("{\"error\":\"" + message + "\"}");
     }
 }

@@ -1,7 +1,7 @@
 server:
   port: 8080
   servlet:
-    context-path: /api
+    context-path: /apis
 
 spring:
   data:
@@ -11,5 +11,11 @@ spring:
       password: KindstaridRFl#T%231
       database: 8
 
-token:
-  secret: 45451165465
+coldlight:
+  token:
+    secret: 45451165465
+  security:
+    global-white-list:
+      - "/login"
+      - "/public/**"
+      - "/actuator/health"

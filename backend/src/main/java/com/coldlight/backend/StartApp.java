@@ -2,12 +2,14 @@ package com.coldlight.backend;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 
 @SpringBootApplication
-public class BackendApplication {
+@ConfigurationPropertiesScan
+public class StartApp {
 
 	public static void main(String[] args) {
-		SpringApplication.run(BackendApplication.class, args);
+		SpringApplication.run(StartApp.class, args);
 	}
 
 }

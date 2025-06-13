@@ -12,7 +12,7 @@ import java.net.UnknownHostException;
  * @author pengpdx
  * @version 1.0
  * @date 2025/6/12 17:22
- * @description TODO
+ * @description 启动时打印启动信息
  */
 @Component
 public class StartupLogger implements ApplicationRunner {

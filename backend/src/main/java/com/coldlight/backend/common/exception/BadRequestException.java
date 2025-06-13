@@ -11,6 +11,9 @@ public class BadRequestException extends ApiException {
 
     public static final String CODE = "BAD_REQUEST";
 
+    public BadRequestException() {
+        super(CODE, "Bad Request");
+    }
     public BadRequestException(String message) {
         super(CODE, message);
     }

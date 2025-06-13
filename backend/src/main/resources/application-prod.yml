@@ -9,5 +9,9 @@ server:
       password: KindstaridRFl#T%231
       database: 8
 
-token:
-  secret: 45451165465
+coldlight:
+  token:
+    secret: 45451165465
+  security:
+    global-white-list:
+      - ""

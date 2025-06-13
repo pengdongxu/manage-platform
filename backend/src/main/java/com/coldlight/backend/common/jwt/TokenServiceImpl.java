@@ -1,10 +1,10 @@
 package com.coldlight.backend.common.jwt;
 
 import com.coldlight.backend.common.enums.UserType;
-import com.coldlight.backend.common.exception.ForbiddenException;
 import com.coldlight.backend.common.exception.UnauthorizedException;
 import com.coldlight.backend.common.request.ClientType;
 import io.jsonwebtoken.*;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -29,7 +29,7 @@ import java.util.concurrent.TimeUnit;
 public class TokenServiceImpl implements TokenService{
 
 
-    @Value("${token.secret}")
+    @Value("${coldlight.token.secret}")
     private String secret;
 
     @Autowired

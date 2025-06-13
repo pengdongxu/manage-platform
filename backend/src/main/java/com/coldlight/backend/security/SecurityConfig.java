@@ -1,7 +1,10 @@
 package com.coldlight.backend.security;
 
+import com.coldlight.backend.common.jwt.JwtAuthenticationFilter;
 import com.coldlight.backend.common.jwt.TokenServiceImpl;
-import com.coldlight.backend.config.JwtAuthenticationFilter;
+import com.coldlight.backend.config.SecurityProperties;
+import com.coldlight.backend.security.handler.JwtAccessDeniedHandler;
+import com.coldlight.backend.security.handler.JwtAuthenticationEntryPoint;
 import com.coldlight.backend.security.principal.UserPrincipalStrategy;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -29,29 +32,48 @@ public class SecurityConfig {
 
     private final TokenServiceImpl tokenService;
     private final List<UserPrincipalStrategy> principalStrategies;
+    private final SecurityProperties properties;
 
-    public SecurityConfig(TokenServiceImpl tokenService, List<UserPrincipalStrategy> principalStrategies) {
+    private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+    private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
+
+    public SecurityConfig(
+            TokenServiceImpl tokenService,
+            List<UserPrincipalStrategy> principalStrategies,
+            SecurityProperties properties,
+            JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint,
+            JwtAccessDeniedHandler jwtAccessDeniedHandler) {
         this.tokenService = tokenService;
         this.principalStrategies = principalStrategies;
+        this.properties = properties;
+        this.jwtAuthenticationEntryPoint = jwtAuthenticationEntryPoint;
+        this.jwtAccessDeniedHandler = jwtAccessDeniedHandler;
     }
-
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.disable())
+                .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/login", "/register", "/public/**", "/actuator/health")
-                        .permitAll()
-                        .anyRequest().authenticated() // 其他接口必须登录后访问
+                        .requestMatchers(properties.getGlobalWhiteList().toArray(new String[0])).permitAll()
+                        .anyRequest().authenticated()
                 )
-                .formLogin(AbstractHttpConfigurer::disable) // 禁用表单登录
-                .logout(AbstractHttpConfigurer::disable); // 禁用默认登出
+                .exceptionHandling(exception -> exception
+                        .authenticationEntryPoint(jwtAuthenticationEntryPoint)
+                        .accessDeniedHandler(jwtAccessDeniedHandler)
+                )
+                .formLogin(AbstractHttpConfigurer::disable)
+                .logout(AbstractHttpConfigurer::disable)
+                .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
 
-        http.addFilterBefore(new JwtAuthenticationFilter(tokenService, principalStrategies), UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 
+
+    @Bean
+    public JwtAuthenticationFilter jwtAuthenticationFilter() {
+        return new JwtAuthenticationFilter(tokenService, principalStrategies);
+    }
 
     /**
      * 密码加密器
