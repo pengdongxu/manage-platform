@@ -2,6 +2,7 @@ package com.coldlight.backend.security.principal;
 
 import com.coldlight.backend.common.enums.UserType;
 import com.coldlight.backend.common.exception.UnauthorizedException;
+import com.coldlight.backend.common.request.ClientType;
 import com.coldlight.backend.security.AdminUserPrincipal;
 import com.coldlight.backend.security.BaseUserPrincipal;
 import io.jsonwebtoken.Claims;
@@ -9,7 +10,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.Objects;
 
 /**
  * @author pengpdx
@@ -31,10 +31,10 @@ public class AdminUserPrincipalStrategy implements UserPrincipalStrategy {
         String userId = claims.getSubject();
         String username = claims.get("username", String.class);
         String clientTypeInToken = claims.get("clientType", String.class);
-        String clientTypeInHeader = request.getHeader("Client-Type");
+        String clientTypeInHeader = request.getHeader("X-Client-Type");
 
         // 2. 基础校验：token字段合法性
-        if (!Objects.equals(clientTypeInToken, clientTypeInHeader)) {
+        if (!ClientType.MANAGER.getValue().equals(clientTypeInHeader) || !clientTypeInToken.equals(clientTypeInHeader)) {
             throw new UnauthorizedException("Client-Type 不一致");
         }
 

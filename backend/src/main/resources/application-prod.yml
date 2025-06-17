@@ -14,4 +14,6 @@ coldlight:
     secret: 45451165465
   security:
     global-white-list:
-      - ""
+      - "/login"
+      - "/public/**"
+      - "/actuator/health"
