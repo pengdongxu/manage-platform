@@ -16,4 +16,9 @@ public class AdminAuthController {
     public String adminAuth() {
         return "系统管理员权限认证成功";
     }
+
+    @PostMapping("/logout")
+    public String adminLogout() {
+        return "系统管理员权限注销成功";
+    }
 }

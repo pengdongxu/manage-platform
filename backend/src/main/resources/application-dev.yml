@@ -13,9 +13,9 @@ spring:
   datasource:
     type: com.alibaba.druid.pool.DruidDataSource
     driver-class-name: org.mariadb.jdbc.Driver
-    url: jdbc:mariadb://localhost:3306/test_db
+    url: jdbc:mariadb://101.132.251.133:3306/manage_platform?useSSL=false&serverTimezone=UTC
     username: root
-    password: 123456
+    password: KindstarJuOVLi#y
 
     druid:
       initial-size: 5
