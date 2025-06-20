@@ -11,5 +11,7 @@ import org.apache.ibatis.annotations.Mapper;
  * @description
  */
 @Mapper
-public interface UserMapper extends BaseMapper<SysUser> {
+public interface SysUserMapper extends BaseMapper<SysUser> {
+
+
 }

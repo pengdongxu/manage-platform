@@ -1,6 +1,6 @@
 package com.coldlight.backend.common.exception;
 
-import com.coldlight.backend.common.response.ApiResponse;
+import com.coldlight.backend.common.base.response.ApiResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;

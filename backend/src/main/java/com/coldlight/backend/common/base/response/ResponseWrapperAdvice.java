@@ -1,4 +1,4 @@
-package com.coldlight.backend.common.response;
+package com.coldlight.backend.common.base.response;
 
 import org.springframework.core.MethodParameter;
 import org.springframework.http.MediaType;

@@ -2,7 +2,7 @@ package com.coldlight.backend.common.jwt;
 
 import com.coldlight.backend.common.enums.UserType;
 import com.coldlight.backend.common.exception.UnauthorizedException;
-import com.coldlight.backend.common.request.ClientType;
+import com.coldlight.backend.common.base.request.ClientType;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;

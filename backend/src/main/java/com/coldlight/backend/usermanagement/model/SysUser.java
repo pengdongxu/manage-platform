@@ -4,7 +4,11 @@ import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.coldlight.backend.common.utils.DateUtils;
+import com.coldlight.backend.usermanagement.dto.SysUserDTO;
+import lombok.Builder;
 import lombok.Getter;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -15,6 +19,8 @@ import java.io.Serializable;
  * @date 2025/6/13 17:21
  * @description 系统用户
  */
+@Getter
+@Builder
 @TableName("SYS_USER")
 public class SysUser implements Serializable {
     @Serial
@@ -43,4 +49,15 @@ public class SysUser implements Serializable {
     //修改人 ID
     private String updateUser;
 
+
+    public static SysUser from(SysUserDTO user) {
+        return SysUser.builder()
+                .account(user.getAccount())
+                .password(PasswordEncoder.encode(user.getPassword()))
+                .status(user.getStatus())
+                .mobile(user.getMobile())
+                .remark(user.getRemark())
+                .createTime(DateUtils.getCurrentTimestamp())
+                .build();
+    }
 }

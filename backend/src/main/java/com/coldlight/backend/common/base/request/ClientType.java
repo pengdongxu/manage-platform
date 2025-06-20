@@ -1,4 +1,4 @@
-package com.coldlight.backend.common.request;
+package com.coldlight.backend.common.base.request;
 
 /**
  * @author pengpdx

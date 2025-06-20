@@ -1,10 +1,8 @@
 package com.coldlight.backend.security;
 
 import com.coldlight.backend.common.enums.UserType;
-import com.coldlight.backend.common.request.ClientType;
-import org.springframework.security.core.GrantedAuthority;
+import com.coldlight.backend.common.base.request.ClientType;
 
-import java.util.Collection;
 import java.util.List;
 
 /**

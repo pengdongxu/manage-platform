@@ -1,7 +1,4 @@
-package com.coldlight.backend.common.response;
-
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+package com.coldlight.backend.common.base.response;
 
 import java.time.LocalDateTime;
 

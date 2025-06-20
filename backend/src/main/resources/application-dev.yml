@@ -39,3 +39,13 @@ coldlight:
       - "/login"
       - "/public/**"
       - "/actuator/health"
+
+# 事务调试日志
+logging:
+  level:
+    org:
+      springframework:
+        transaction: DEBUG
+        jdbc:
+          DataSource:
+            DataSourceTransactionManager: DEBUG

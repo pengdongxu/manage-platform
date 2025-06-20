@@ -17,12 +17,6 @@ public interface SysUserConvert {
 
     SysUserConvert INSTANCE = Mappers.getMapper(SysUserConvert.class);
 
-
-    SysUser dtoToEntity(SysUserDTO dto);
-
     SysUserVO entityToVO(SysUser user);
-
-    SysUserDTO entityToDTO(SysUser user);
-
 
 }

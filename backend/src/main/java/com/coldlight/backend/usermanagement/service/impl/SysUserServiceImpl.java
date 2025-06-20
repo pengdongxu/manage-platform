@@ -1,50 +1,48 @@
 package com.coldlight.backend.usermanagement.service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.coldlight.backend.common.base.service.BaseServiceImpl;
-import com.coldlight.backend.usermanagement.dto.UserQueryDTO;
-import com.coldlight.backend.usermanagement.mapper.UserMapper;
+import com.coldlight.backend.usermanagement.convert.SysUserConvert;
+import com.coldlight.backend.usermanagement.dto.SysUserDTO;
+import com.coldlight.backend.usermanagement.manage.SysUserManage;
 import com.coldlight.backend.usermanagement.model.SysUser;
 import com.coldlight.backend.usermanagement.service.SysUserService;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.coldlight.backend.usermanagement.vo.SysUserVO;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
 /**
  * @author pengpdx
  * @version 1.0
- * @date 2025/6/18 17:31
- * @description TODO
+ * @date 2025/6/20 15:02
+ * @description 系统用户服务实现类
  */
-public class SysUserServiceImpl extends BaseServiceImpl<SysUser, UserQueryDTO> implements SysUserService {
+@Service
+@RequiredArgsConstructor
+public class SysUserServiceImpl implements SysUserService {
 
-    @Autowired
-    private UserMapper userMapper;
+    private final SysUserManage userManage;
+    private final SysUserConvert userConvert;
+
 
     @Override
-    protected BaseMapper<SysUser> getBaseMapper() {
-        return userMapper;
+    public SysUserVO getById(Long id) {
+        SysUser sysUser = userManage.getById(id);
+        return userConvert.entityToVO(sysUser);
     }
 
     @Override
-    protected QueryWrapper<SysUser> buildQueryWrapper(UserQuery query) {
-        QueryWrapper<SysUser> wrapper = new QueryWrapper<>();
-        if (query == null) return wrapper;
-
-        if (query.getUsername() != null && !query.getUsername().isEmpty()) {
-            wrapper.like("username", query.getUsername());
-        }
-
-        if (query.getStatus() != null) {
-            wrapper.eq("status", query.getStatus());
-        }
-
-        if (query.getStartDate() != null) {
-            wrapper.ge("create_time", query.getStartDate());
-        }
-
-        if (query.getEndDate() != null) {
-            wrapper.le("create_time", query.getEndDate());
-        }
-
-        return wrapper;
+    public boolean save(SysUserDTO user) {
+        SysUser sysUser = SysUser.from(user);
+        return userManage.save(sysUser);
     }
+
+
+    @Override
+    public boolean updateById(SysUser user) {
+        return false;
+    }
+
+    @Override
+    public boolean deleteById(Long id) {
+        return false;
+    }
+}

@@ -2,7 +2,7 @@ package com.coldlight.backend.security.principal;
 
 import com.coldlight.backend.common.enums.UserType;
 import com.coldlight.backend.common.exception.UnauthorizedException;
-import com.coldlight.backend.common.request.ClientType;
+import com.coldlight.backend.common.base.request.ClientType;
 import com.coldlight.backend.security.AdminUserPrincipal;
 import com.coldlight.backend.security.BaseUserPrincipal;
 import io.jsonwebtoken.Claims;
